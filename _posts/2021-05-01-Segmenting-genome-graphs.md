@@ -4,3 +4,5 @@ title: 'Segmenting genome graphs'
 ---
 
 # What is genome segmentation
+
+{% bibliography --cited %}
