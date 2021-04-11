@@ -1,1 +1,6 @@
-# Publications
+---
+layout: default
+title: Publications
+---
+
+{% bibliography %}

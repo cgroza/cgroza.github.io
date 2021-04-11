@@ -45,3 +45,7 @@ header_pages:
   - pubs.md
   - about.md
 
+plugins: ['jekyll/scholar']
+
+scholar:
+  style: chicago-fullnote-bibliography
