@@ -27,6 +27,8 @@ theme: minima
 minima:
   skin: dark
 
+future: true
+
 plugins:
   - jekyll-feed
 
