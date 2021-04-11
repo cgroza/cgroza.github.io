@@ -15,7 +15,7 @@
 # in the templates via {{ site.myvariable }}.
 title: Genomic Ruminations
 email:
-description: ""
+description: "This page exists just in case I ever think of something original."
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: cristian_groza
@@ -24,6 +24,9 @@ github_username:  cgroza
 # Build settings
 markdown: kramdown
 theme: minima
+minima:
+  skin: dark
+
 plugins:
   - jekyll-feed
 
@@ -38,3 +41,7 @@ plugins:
 #   - vendor/cache/
 #   - vendor/gems/
 #   - vendor/ruby/
+header_pages:
+  - pubs.md
+  - about.md
+
