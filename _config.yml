@@ -18,7 +18,7 @@ email:
 description: "This page exists just in case I ever think of something original."
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
-twitter_username: cristian_groza
+twitter_username: groza_cristian
 github_username:  cgroza
 
 # Build settings
