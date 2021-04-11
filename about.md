@@ -12,6 +12,6 @@ While following this line of research, I also became acquainted with transposabl
 A list of my publications can be found [on this page](/pubs/).
 
 I am also interested in programming languages that bring new concepts from the functional world into the imperative mainstream.
-Over the years, I have experimented with Haskell, Erlang, a few Lisps and Rusts.
+Over the years, I have experimented with Haskell, Erlang, a few Lisps and Rust.
 Therefore, I am quite excited to see how functional programming will affect bioinformatics software development in the future.
 It would certainly be refreshing to see algorithms written in a language with a strong and expressive type system and not in weakly typed imperative C.
