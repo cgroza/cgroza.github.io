@@ -50,4 +50,4 @@ header_pages:
 plugins: ['jekyll/scholar']
 
 scholar:
-  style: chicago-fullnote-bibliography
+  style: genome-biology-and-evolution
