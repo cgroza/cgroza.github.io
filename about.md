@@ -6,7 +6,8 @@ permalink: /about/
 
 I am a bioinformatics PhD student in Guillaume Bourque's lab at McGill University.
 I apply genome graphs, sequence assembly and string matching algorithms in the area of epigenomics.
-Particularly, I am looking to find epigenomic events that are obscured by the inability of reference genomes to represent human genetic variation.
+Particularly, I am looking to find epigenomic events that are hidden in the variable regions of the genomes.
+Since a single reference genome cannot properly represent genetic variation, we may miss events that lie on the non-reference alleles.
 To this end, I exploit large whole genome sequencing, ChIP-seq and ATAC-seq datasets.
 While following this line of research, I also became acquainted with transposable elements.
 A list of my publications can be found [on this page](/pubs/).
