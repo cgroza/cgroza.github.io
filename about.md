@@ -4,6 +4,7 @@ title: About
 permalink: /about/
 ---
 
+# About
 
 I am a bioinformatics PhD student in Guillaume Bourque's lab at McGill University.
 I apply genome graphs, sequence assembly and string matching algorithms in the area of epigenomics.
