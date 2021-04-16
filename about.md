@@ -15,7 +15,7 @@ While following this line of research, I also became acquainted with transposabl
 A list of my publications can be found [on this page](/pubs/).
 
 <p align="center">
-  <img width="600" height="auto" src="/assets/profile.jpg">
+  <img width="500" height="auto" src="/assets/profile.jpg">
 </p>
 
 I am also interested in programming languages that bring new concepts from the functional world into the imperative mainstream.
