@@ -51,6 +51,7 @@ That said, there are many decision yet to be made in the design of a human pange
 The final shape and size of this new genome reference will ultimately determine the new technical challenges we will face, as well as their potential solutions.
 
 
+# References
 
 {% bibliography --cited %}
 
