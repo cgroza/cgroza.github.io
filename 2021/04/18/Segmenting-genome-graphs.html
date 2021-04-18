@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Segmenting signal in genome graphs | Genomic Ruminations</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Segmenting signal in genome graphs" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="What is genome segmentation" />
+<meta property="og:description" content="What is genome segmentation" />
+<link rel="canonical" href="/2021/04/18/Segmenting-genome-graphs.html" />
+<meta property="og:url" content="/2021/04/18/Segmenting-genome-graphs.html" />
+<meta property="og:site_name" content="Genomic Ruminations" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-04-18T00:00:00-05:00" />
+<script type="application/ld+json">
+{"url":"/2021/04/18/Segmenting-genome-graphs.html","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"/2021/04/18/Segmenting-genome-graphs.html"},"headline":"Segmenting signal in genome graphs","dateModified":"2021-04-18T00:00:00-05:00","datePublished":"2021-04-18T00:00:00-05:00","description":"What is genome segmentation","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="Genomic Ruminations" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Genomic Ruminations</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/">Blog</a><a class="page-link" href="/pubs/">Publications</a><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Segmenting signal in genome graphs</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2021-04-18T00:00:00-05:00" itemprop="datePublished">Apr 18, 2021
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <h1 id="what-is-genome-segmentation">What is genome segmentation</h1>
+
+<p>Genome segmentation partitions the genome into segments in order to reveal regions with similar properties.
+It is commonly applied to epigenomic profiles when searching for functional elements in the genome, such as genes, promoters, or enhancers.
+Because functional elements show distinct signatures in ChIP-seq, ATAC-seq or DNAse-seq data, they can be detected and clustered by unsupervised learning algorithms.
+In the case of Segway <a class="citation" href="#hoffman_unsupervised_2012">(Hoffman et al. 2012)</a>, the result is a set of labeled non-overlapping segments that cover every nucleotide in the genome.
+The resulting labeled segments are then interpreted to infer the possible roles of genomic regions.
+The second figure from this paper intuitively describes the annotation.</p>
+
+<h1 id="segmenting-novel-sequences-in-genome-graphs">Segmenting novel sequences in genome graphs</h1>
+<p>Human pangenome studies frequently find non-reference insertions up to 100 kbp in length <a class="citation" href="#ebert_haplotype-resolved_2021">(Ebert et al. 2021)</a>.
+A comprehensive human pangenome graph will contain several megabases of additional novel sequence that were previously difficult to access within a linear genome reference.
+The additional DNA content could support functional elements that were previously unknown but that could be found by a segmentation algorithm.</p>
+
+<p>However, the new sequences will no longer be organized as a set of linear strings.
+Instead, they will be encoded as a sequence graph that describes all the haplotypes encountered in hundreds of human genome assemblies.
+Therefore, a segmentation algorithm  must be ported to this new data structure.
+A non-cyclic variation graph will certainly feature nested sequence variation.
+That is, a large polymorphic insertion that happens to nest several other polymorphisms, such as SNPs, deletions or other smaller insertions.
+Overall, I imagine that segmenting such a bubble with colored labels would look similar to this illustration:</p>
+<p align="center">
+  <img width="250" height="auto" src="/assets/segmented_graph.svg" style="transform:rotate(90deg);" />
+</p>
+
+<p>Thus, the definition of a segment needs to be expanded to support bubbles that contain several distinct segment labels.
+Perhaps this definition could be applied recursively until it reaches a base case that could be easily partitioned.
+Alternatively, if the haplotypes of the samples are known, we might retrace haplotypes and associated signals from the graph and segment them linearly.
+The location of the labeled segments could then be projected back to annotate the graph.</p>
+
+<h1 id="expectations-and-challenges">Expectations and challenges</h1>
+
+<p>As suggested by the above figure, the segmentation of alternative paths through the same variable locus will sometimes show different features.
+These would interesting alternative segmentations that I expect to happen at some low rate.
+Given that a human pangenome graph is likely to include common SNVs and shorter indels, most bubbles should be segmented identically through all possible traversals.
+I expect alternative segmentations to be restricted to larger bubbles that represent structural variants in functionally rich regions.
+However, it is still possible for smaller variants to disrupt the binding motif of a transcription factor or other DNA binding proteins.
+In such cases, the segmentations of alternative paths through small bubbles reveals allelic specific events.
+Indeed, a genome graph provides a very convenient way to study allelic specific binding!</p>
+
+<p>That said, there are challenges associated with a data structure that represents a large number of genomes.
+A large portion of structural variation is in fact copy number variation.
+The mappability of such sequences is inherently low, which hinders our ability to accurately measure genomic features with short read libraries.
+This difficulty is partially addressed by paired-end libraries, but is ultimately limited by the fragment size distribution of the library.</p>
+
+<p>That said, there are many decision yet to be made in the design of a human pangenome graph.
+The final shape and size of this new genome reference will ultimately determine the new technical challenges we will face, as well as their potential solutions.</p>
+
+<ol class="bibliography"><li><span id="hoffman_unsupervised_2012">Hoffman MM et al. 2012. Unsupervised Pattern Discovery in Human Chromatin Structure through Genomic Segmentation. Nature Methods. 9:473–476. doi: 10.1038/nmeth.1937.</span></li>
+<li><span id="ebert_haplotype-resolved_2021">Ebert P et al. 2021. Haplotype-Resolved Diverse Human Genomes and Integrated Analysis of Structural Variation. Science. eabf7117. doi: 10.1126/science.abf7117.</span></li></ol>
+
+<!-- Local Variables: -->
+<!-- org-ref-default-bibliography: /Users/cgroza/git/cgroza.github.io/_bibliography/references.bib -->
+<!-- End: -->
+
+  </div><a class="u-url" href="/2021/04/18/Segmenting-genome-graphs.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Genomic Ruminations</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Genomic Ruminations</li><li><a class="u-email" href="mailto:cristian.groza@mail.mcgill.ca">cristian.groza@mail.mcgill.ca</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/cgroza"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">cgroza</span></a></li><li><a href="https://www.twitter.com/groza_cristian"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">groza_cristian</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>This page exists just in case I ever think of something original.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
