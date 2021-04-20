@@ -28,7 +28,7 @@ theme: minima
 minima:
   skin: dark
 
-show_excerpts: true
+show_excerpts: false
 
 future: true
 
