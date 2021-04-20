@@ -28,6 +28,8 @@ theme: minima
 minima:
   skin: dark
 
+show_excerpts: true
+
 future: true
 
 plugins:
