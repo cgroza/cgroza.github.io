@@ -55,3 +55,4 @@ plugins: ['jekyll/scholar']
 
 scholar:
   style: genome-biology-and-evolution
+  bibliography_template: "{{ reference | replace_first: 'Groza C', '<b>Groza C</b>' }}"
