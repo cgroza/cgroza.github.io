@@ -18,7 +18,7 @@ author: "Cristian Groza"
 email: "cristian.groza@mail.mcgill.ca"
 description: "This page exists just in case I ever think of something original."
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https/cgroza.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: groza_cristian
 github_username:  cgroza
 
@@ -34,6 +34,7 @@ future: true
 
 plugins:
   - jekyll-feed
+  - jekyll-sitemap
 
 # Exclude from processing.
 # The following items will not be processed, by default. Create a custom list
