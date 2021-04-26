@@ -1,1 +1,121 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2021-04-10T21:35:08-05:00</updated><id>/feed.xml</id><title type="html">Genomic Ruminations</title><subtitle>This page exists just in case I ever think of something original.</subtitle></feed>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2021-04-25T17:23:48-05:00</updated><id>/feed.xml</id><title type="html">Genomic Ruminations</title><subtitle>This page exists just in case I ever think of something original.</subtitle><author><name>Cristian Groza</name></author><entry><title type="html">Formats for genome coverage in graphs</title><link href="/2021/04/24/Formats-for-graph-genome-coverage.html" rel="alternate" type="text/html" title="Formats for genome coverage in graphs" /><published>2021-04-24T00:00:00-05:00</published><updated>2021-04-24T00:00:00-05:00</updated><id>/2021/04/24/Formats-for-graph-genome-coverage</id><content type="html" xml:base="/2021/04/24/Formats-for-graph-genome-coverage.html">&lt;p&gt;In my work with genome graphs, I have noticed a gap in the ecosystem of file formats and tools.
+Particularly, I was trying to get the read depth at each nucleotide on every node in a genome graph.
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vg pack&lt;/code&gt;  is one tool that efficiently solves this task &lt;a class=&quot;citation&quot; href=&quot;#hickey_genotyping_2020&quot;&gt;(Hickey et al. 2020)&lt;/a&gt;.
+Despite this, the data cannot be easily accessed.
+The output is a serialized file format that is created and loaded internally by &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vg&lt;/code&gt; using functionality in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vg/src/packer.cpp&lt;/code&gt;.
+But so far, I have not seen any option to subset and convert this data into a tabulated file format that can be loaded from scripts to be visualized.
+The reason for this seems to be two fold.&lt;/p&gt;
+
+&lt;p&gt;Fist, the current research focus is on graph construction and variant genotyping.
+These algorithms are written within single tools using their own binary file formats that are optimized for easy loading and saving.
+Since genome coverage data never has to leave the ecosystem of a single tool, no code was ever written to export it to another interoperable or human readable format.
+The second problem is the availability of an established format for exporting coverage data.
+The plain text GFA and GAF formats are already widely used to describe the structure of graphs or the alignment of sequences to graphs.
+However, no equivalent exists to show the read depth on a nucleotide in a genome graph.&lt;/p&gt;
+
+&lt;p&gt;Such formats will certainly be necessary in the future for genome tracks similar to those found in the UCSC Genome Browser.
+Therefore, it might be worth extending existing formats from the linear genome to the graph genome.
+For instance,  the wiggle track format (WIG) is often used for high density tracks.
+In its current form, an entry looks something like this:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;fixedStep  chrom=chrN
+[span=windowSize]
+  dataValueA
+  dataValueB
+  ...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Wiggle avoids repeating the chromosome names for each entry, which saves space because a small number of long contigs support very dense data.
+This layout is easily ported to graph coordinates by replacing the chromosome field with a node field.
+Provided that the average node length is sufficiently large, such a format could prove economical.
+However, the overhead increases as the average node length decreases because metadata lines are required for every node.
+Alternatively, we could specify a number of haplotypes along which to count the coverage.
+Then, the node field could be replaced by a path through the graph, giving runs of sequence that are much longer than a single node.
+The haplotypes could be described through a path matching string like the one found in the &lt;a href=&quot;https://github.com/lh3/gfatools/blob/master/doc/rGFA.md#the-graph-alignment-format-gaf&quot;&gt;GAF&lt;/a&gt; format.&lt;/p&gt;
+
+&lt;p&gt;Since haplotypes also enumerate edges, we could also add the coverage at each edge in addition to nodes.
+At the cost of additional complexity, a graph wiggle format could look as follows:&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;fixedStep  path=&amp;lt;path matching string&amp;gt;
+[nucleotides, span=windowSize]
+  nucletideDataValueA
+  nucleotideDataValueB
+  ...
+[edges]
+  edgeDataValueA
+  edgeDataValueB
+  ...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The other alternative is the familiar BED format.
+It is the simplest format to work with, because it just separates fields with a tab character:&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;chrom chromStart chromEnd dataValue
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Again, by replacing the chromosome field with a node identifier, we could annotate nodes with coverage data.
+However, this format is wasteful when the data is either very dense or at very high resolution.
+It would only be practical for sparse annotations.
+Here, incorporating haplotypes in a self contained fashion is more difficult.
+Without a header that names the haplotypes, each entry would have to describe entire paths again and again.&lt;/p&gt;
+
+&lt;p&gt;In both cases, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;wigToBigWig&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bedToBigBed&lt;/code&gt; provide binary equivalents.
+The same could be done for any emerging graphical format in order to save disk space and increase I/O speed.&lt;/p&gt;
+
+&lt;h1 id=&quot;references&quot;&gt;References&lt;/h1&gt;
+
+&lt;ol class=&quot;bibliography&quot;&gt;&lt;li&gt;&lt;span id=&quot;hickey_genotyping_2020&quot;&gt;Hickey G et al. 2020. Genotyping Structural Variants in Pangenome Graphs Using the vg Toolkit. Genome Biology. 21:35. doi: 10.1186/s13059-020-1941-7.&lt;/span&gt;&lt;/li&gt;&lt;/ol&gt;
+
+&lt;!-- Local Variables: --&gt;
+&lt;!-- org-ref-default-bibliography: /Users/cgroza/git/cgroza.github.io/_bibliography/references.bib --&gt;
+&lt;!-- End: --&gt;</content><author><name>Cristian Groza</name></author><summary type="html">In my work with genome graphs, I have noticed a gap in the ecosystem of file formats and tools. Particularly, I was trying to get the read depth at each nucleotide on every node in a genome graph. vg pack is one tool that efficiently solves this task (Hickey et al. 2020). Despite this, the data cannot be easily accessed. The output is a serialized file format that is created and loaded internally by vg using functionality in vg/src/packer.cpp. But so far, I have not seen any option to subset and convert this data into a tabulated file format that can be loaded from scripts to be visualized. The reason for this seems to be two fold.</summary></entry><entry><title type="html">Segmenting signal in genome graphs</title><link href="/2021/04/18/Segmenting-genome-graphs.html" rel="alternate" type="text/html" title="Segmenting signal in genome graphs" /><published>2021-04-18T00:00:00-05:00</published><updated>2021-04-18T00:00:00-05:00</updated><id>/2021/04/18/Segmenting-genome-graphs</id><content type="html" xml:base="/2021/04/18/Segmenting-genome-graphs.html">&lt;h1 id=&quot;what-is-genome-segmentation&quot;&gt;What is genome segmentation&lt;/h1&gt;
+
+&lt;p&gt;Genome segmentation partitions the genome into segments in order to reveal regions with similar properties.
+It is commonly applied to epigenomic profiles when searching for functional elements in the genome, such as genes, promoters, or enhancers.
+Because functional elements show distinct signatures in ChIP-seq, ATAC-seq or DNAse-seq data, they can be detected and clustered by unsupervised learning algorithms.
+In the case of Segway &lt;a class=&quot;citation&quot; href=&quot;#hoffman_unsupervised_2012&quot;&gt;(Hoffman et al. 2012)&lt;/a&gt;, the result is a set of labeled non-overlapping segments that cover every nucleotide in the genome.
+The resulting labeled segments are then interpreted to infer the possible roles of genomic regions.
+The second figure from this paper intuitively describes the annotation.&lt;/p&gt;
+
+&lt;h1 id=&quot;segmenting-novel-sequences-in-genome-graphs&quot;&gt;Segmenting novel sequences in genome graphs&lt;/h1&gt;
+&lt;p&gt;Human pangenome studies frequently find non-reference insertions up to 100 kbp in length &lt;a class=&quot;citation&quot; href=&quot;#ebert_haplotype-resolved_2021&quot;&gt;(Ebert et al. 2021)&lt;/a&gt;.
+A comprehensive human pangenome graph will contain several megabases of additional novel sequence that were previously difficult to access within a linear genome reference.
+The additional DNA content could support functional elements that were previously unknown but that could be found by a segmentation algorithm.&lt;/p&gt;
+
+&lt;p&gt;However, the new sequences will no longer be organized as a set of linear strings.
+Instead, they will be encoded as a sequence graph that describes all the haplotypes encountered in hundreds of human genome assemblies.
+Therefore, a segmentation algorithm  must be ported to this new data structure.
+A non-cyclic variation graph will certainly feature nested sequence variation.
+That is, a large polymorphic insertion that happens to nest several other polymorphisms, such as SNPs, deletions or other smaller insertions.
+Overall, I imagine that segmenting such a bubble with colored labels would look similar to this illustration:&lt;/p&gt;
+&lt;p align=&quot;center&quot;&gt;
+  &lt;img width=&quot;250&quot; height=&quot;auto&quot; src=&quot;/assets/segmented_graph.svg&quot; style=&quot;transform:rotate(90deg);&quot; /&gt;
+&lt;/p&gt;
+
+&lt;p&gt;Thus, the definition of a segment needs to be expanded to support bubbles that contain several distinct segment labels.
+Perhaps this definition could be applied recursively until it reaches a base case that could be easily partitioned.
+Alternatively, if the haplotypes of the samples are known, we might retrace haplotypes and associated signals from the graph and segment them linearly.
+The location of the labeled segments could then be projected back to annotate the graph.&lt;/p&gt;
+
+&lt;h1 id=&quot;expectations-and-challenges&quot;&gt;Expectations and challenges&lt;/h1&gt;
+
+&lt;p&gt;As suggested by the above figure, the segmentation of alternative paths through the same variable locus will sometimes show different features.
+These would interesting alternative segmentations that I expect to happen at some low rate.
+Given that a human pangenome graph is likely to include common SNVs and shorter indels, most bubbles should be segmented identically through all possible traversals.
+I expect alternative segmentations to be restricted to larger bubbles that represent structural variants in functionally rich regions.
+However, it is still possible for smaller variants to disrupt the binding motif of a transcription factor or other DNA binding proteins.
+In such cases, the segmentations of alternative paths through small bubbles reveals allelic specific events.
+Indeed, a genome graph provides a very convenient way to study allelic specific binding!&lt;/p&gt;
+
+&lt;p&gt;That said, there are challenges associated with a data structure that represents a large number of genomes.
+A large portion of structural variation is in fact copy number variation.
+The mappability of such sequences is inherently low, which hinders our ability to accurately measure genomic features with short read libraries.
+This difficulty is partially addressed by paired-end libraries, but is ultimately limited by the fragment size distribution of the library.&lt;/p&gt;
+
+&lt;p&gt;That said, there are many decision yet to be made in the design of a human pangenome graph.
+The final shape and size of this new genome reference will ultimately determine the new technical challenges we will face, as well as their potential solutions.&lt;/p&gt;
+
+&lt;h1 id=&quot;references&quot;&gt;References&lt;/h1&gt;
+
+&lt;ol class=&quot;bibliography&quot;&gt;&lt;li&gt;&lt;span id=&quot;hoffman_unsupervised_2012&quot;&gt;Hoffman MM et al. 2012. Unsupervised Pattern Discovery in Human Chromatin Structure through Genomic Segmentation. Nature Methods. 9:473–476. doi: 10.1038/nmeth.1937.&lt;/span&gt;&lt;/li&gt;
+&lt;li&gt;&lt;span id=&quot;ebert_haplotype-resolved_2021&quot;&gt;Ebert P et al. 2021. Haplotype-Resolved Diverse Human Genomes and Integrated Analysis of Structural Variation. Science. eabf7117. doi: 10.1126/science.abf7117.&lt;/span&gt;&lt;/li&gt;&lt;/ol&gt;
+
+&lt;!-- Local Variables: --&gt;
+&lt;!-- org-ref-default-bibliography: /Users/cgroza/git/cgroza.github.io/_bibliography/references.bib --&gt;
+&lt;!-- End: --&gt;</content><author><name>Cristian Groza</name></author><summary type="html">What is genome segmentation</summary></entry></feed>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Formats for genome coverage in graphs | Genomic Ruminations</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Formats for genome coverage in graphs" />
+<meta name="author" content="Cristian Groza" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="In my work with genome graphs, I have noticed a gap in the ecosystem of file formats and tools. Particularly, I was trying to get the read depth at each nucleotide on every node in a genome graph. vg pack is one tool that efficiently solves this task (Hickey et al. 2020). Despite this, the data cannot be easily accessed. The output is a serialized file format that is created and loaded internally by vg using functionality in vg/src/packer.cpp. But so far, I have not seen any option to subset and convert this data into a tabulated file format that can be loaded from scripts to be visualized. The reason for this seems to be two fold." />
+<meta property="og:description" content="In my work with genome graphs, I have noticed a gap in the ecosystem of file formats and tools. Particularly, I was trying to get the read depth at each nucleotide on every node in a genome graph. vg pack is one tool that efficiently solves this task (Hickey et al. 2020). Despite this, the data cannot be easily accessed. The output is a serialized file format that is created and loaded internally by vg using functionality in vg/src/packer.cpp. But so far, I have not seen any option to subset and convert this data into a tabulated file format that can be loaded from scripts to be visualized. The reason for this seems to be two fold." />
+<link rel="canonical" href="/2021/04/24/Formats-for-graph-genome-coverage.html" />
+<meta property="og:url" content="/2021/04/24/Formats-for-graph-genome-coverage.html" />
+<meta property="og:site_name" content="Genomic Ruminations" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-04-24T00:00:00-05:00" />
+<script type="application/ld+json">
+{"url":"/2021/04/24/Formats-for-graph-genome-coverage.html","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"/2021/04/24/Formats-for-graph-genome-coverage.html"},"author":{"@type":"Person","name":"Cristian Groza"},"headline":"Formats for genome coverage in graphs","dateModified":"2021-04-24T00:00:00-05:00","datePublished":"2021-04-24T00:00:00-05:00","description":"In my work with genome graphs, I have noticed a gap in the ecosystem of file formats and tools. Particularly, I was trying to get the read depth at each nucleotide on every node in a genome graph. vg pack is one tool that efficiently solves this task (Hickey et al. 2020). Despite this, the data cannot be easily accessed. The output is a serialized file format that is created and loaded internally by vg using functionality in vg/src/packer.cpp. But so far, I have not seen any option to subset and convert this data into a tabulated file format that can be loaded from scripts to be visualized. The reason for this seems to be two fold.","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="Genomic Ruminations" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Genomic Ruminations</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/">Blog</a><a class="page-link" href="/pubs/">Publications</a><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Formats for genome coverage in graphs</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2021-04-24T00:00:00-05:00" itemprop="datePublished">Apr 24, 2021
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>In my work with genome graphs, I have noticed a gap in the ecosystem of file formats and tools.
+Particularly, I was trying to get the read depth at each nucleotide on every node in a genome graph.
+<code class="language-plaintext highlighter-rouge">vg pack</code>  is one tool that efficiently solves this task <a class="citation" href="#hickey_genotyping_2020">(Hickey et al. 2020)</a>.
+Despite this, the data cannot be easily accessed.
+The output is a serialized file format that is created and loaded internally by <code class="language-plaintext highlighter-rouge">vg</code> using functionality in <code class="language-plaintext highlighter-rouge">vg/src/packer.cpp</code>.
+But so far, I have not seen any option to subset and convert this data into a tabulated file format that can be loaded from scripts to be visualized.
+The reason for this seems to be two fold.</p>
+
+<p>Fist, the current research focus is on graph construction and variant genotyping.
+These algorithms are written within single tools using their own binary file formats that are optimized for easy loading and saving.
+Since genome coverage data never has to leave the ecosystem of a single tool, no code was ever written to export it to another interoperable or human readable format.
+The second problem is the availability of an established format for exporting coverage data.
+The plain text GFA and GAF formats are already widely used to describe the structure of graphs or the alignment of sequences to graphs.
+However, no equivalent exists to show the read depth on a nucleotide in a genome graph.</p>
+
+<p>Such formats will certainly be necessary in the future for genome tracks similar to those found in the UCSC Genome Browser.
+Therefore, it might be worth extending existing formats from the linear genome to the graph genome.
+For instance,  the wiggle track format (WIG) is often used for high density tracks.
+In its current form, an entry looks something like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>fixedStep  chrom=chrN
+[span=windowSize]
+  dataValueA
+  dataValueB
+  ...
+</code></pre></div></div>
+<p>Wiggle avoids repeating the chromosome names for each entry, which saves space because a small number of long contigs support very dense data.
+This layout is easily ported to graph coordinates by replacing the chromosome field with a node field.
+Provided that the average node length is sufficiently large, such a format could prove economical.
+However, the overhead increases as the average node length decreases because metadata lines are required for every node.
+Alternatively, we could specify a number of haplotypes along which to count the coverage.
+Then, the node field could be replaced by a path through the graph, giving runs of sequence that are much longer than a single node.
+The haplotypes could be described through a path matching string like the one found in the <a href="https://github.com/lh3/gfatools/blob/master/doc/rGFA.md#the-graph-alignment-format-gaf">GAF</a> format.</p>
+
+<p>Since haplotypes also enumerate edges, we could also add the coverage at each edge in addition to nodes.
+At the cost of additional complexity, a graph wiggle format could look as follows:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>fixedStep  path=&lt;path matching string&gt;
+[nucleotides, span=windowSize]
+  nucletideDataValueA
+  nucleotideDataValueB
+  ...
+[edges]
+  edgeDataValueA
+  edgeDataValueB
+  ...
+</code></pre></div></div>
+
+<p>The other alternative is the familiar BED format.
+It is the simplest format to work with, because it just separates fields with a tab character:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>chrom chromStart chromEnd dataValue
+</code></pre></div></div>
+<p>Again, by replacing the chromosome field with a node identifier, we could annotate nodes with coverage data.
+However, this format is wasteful when the data is either very dense or at very high resolution.
+It would only be practical for sparse annotations.
+Here, incorporating haplotypes in a self contained fashion is more difficult.
+Without a header that names the haplotypes, each entry would have to describe entire paths again and again.</p>
+
+<p>In both cases, <code class="language-plaintext highlighter-rouge">wigToBigWig</code> and <code class="language-plaintext highlighter-rouge">bedToBigBed</code> provide binary equivalents.
+The same could be done for any emerging graphical format in order to save disk space and increase I/O speed.</p>
+
+<h1 id="references">References</h1>
+
+<ol class="bibliography"><li><span id="hickey_genotyping_2020">Hickey G et al. 2020. Genotyping Structural Variants in Pangenome Graphs Using the vg Toolkit. Genome Biology. 21:35. doi: 10.1186/s13059-020-1941-7.</span></li></ol>
+
+<!-- Local Variables: -->
+<!-- org-ref-default-bibliography: /Users/cgroza/git/cgroza.github.io/_bibliography/references.bib -->
+<!-- End: -->
+
+  </div><a class="u-url" href="/2021/04/24/Formats-for-graph-genome-coverage.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Genomic Ruminations</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Cristian Groza</li><li><a class="u-email" href="mailto:cristian.groza@mail.mcgill.ca">cristian.groza@mail.mcgill.ca</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/cgroza"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">cgroza</span></a></li><li><a href="https://www.twitter.com/groza_cristian"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">groza_cristian</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>This page exists just in case I ever think of something original.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
